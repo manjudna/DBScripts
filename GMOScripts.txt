@@ -1,0 +1,56 @@
+ /****** 1.	Get all customers who have NOT bought an item with id 100 in the last year.  ******/
+  
+SELECT  c.[CustomerID],c.[CustomerName] ,co.OrderDate, od.OrderAmount, od.ItemId  
+FROM [CustomerOrder].[dbo].[Customer] c 
+  inner join [dbo].[CustomerOrder] co 
+  on c.CustomerID= co.CustomerId
+  inner join [dbo].[OrderDetail] od 
+  on od.OrderId = co.OrderId
+WHERE YEAR( co.OrderDate) = YEAR(getdate())-1  and od.ItemId<>100
+
+
+/******2.	Get the single customer with the highest order amount on orders with 5 or more different items..  ******/
+  
+SELECT top 1 o.OrderId,o.CustomerId,
+sum(od.OrderAmount*od.Quantity) as total
+FROM [CustomerOrder].[dbo].[CustomerOrder] o 
+inner join [dbo].[OrderDetail] od
+on o.OrderId=od.OrderId
+group by o.OrderId,o.CustomerId
+having count(od.itemid)>=5
+order by total desc
+
+/****** 3.	Get all items that have a quantity greater than 10 in an order and return the OrderId, OrderDate, CategoryName, ItemName and Quantity.  ******/
+
+SELECT  c.[CustomerID],c.[CustomerName] ,co.OrderDate, od.OrderAmount,od.ItemId,od.OrderId,ca.CategoryName,it.ItemName,od.Quantity
+FROM [CustomerOrder].[dbo].[Customer] c 
+inner join [dbo].[CustomerOrder] co 
+  on c.CustomerID= co.CustomerId
+inner join [dbo].[OrderDetail] od 
+  on od.OrderId = co.OrderId
+inner join [dbo].[Item] it
+  on it.ItemId = od.ItemId
+inner join [dbo].[Category] ca
+  on ca.CategoryId = it.CategoryId 
+WHERE od.Quantity>10
+  
+   
+ 
+  
+  /****** 	4.	Set the status field to inactive for all customers who have not placed any order in the last year.  ******/
+  
+  Update [dbo].[Customer] 
+set [CustomerStatus]=0
+from [dbo].[Customer] c 
+left join [dbo].[CustomerOrder] co 
+  on c.CustomerID= co.CustomerId
+  where co.OrderDate is null or YEAR( co.OrderDate) <> YEAR(getdate())-1 
+  
+  
+  
+
+
+
+
+
+
